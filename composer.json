@@ -18,6 +18,7 @@
     "symfony/yaml": "7.2.*"
   },
   "require-dev": {
+    "phpstan/phpstan-symfony": "^2.0",
     "squizlabs/php_codesniffer": "^3.11.3"
   },
   "config": {
@@ -28,8 +29,9 @@
     },
     "bump-after-update": true,
     "sort-packages": true,
-    "phpcs": "./vendor/bin/phpcs",
-    "phpcbf": "./vendor/bin/phpcbf"
+    "phpcs": "./vendor/bin/phpcs --no-cache",
+    "phpcbf": "./vendor/bin/phpcbf --no-cache",
+    "phpstan": "./vendor/bin/phpstan analyse --memory-limit=-1"
   },
   "autoload": {
     "psr-4": {
