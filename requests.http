@@ -1,2 +1,5 @@
 ### root
 GET {{host}}
+
+### status
+GET {{host}}/status
