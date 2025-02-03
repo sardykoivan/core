@@ -25,7 +25,7 @@ services:
       - core-network
     environment:
       XDEBUG_CONFIG: "client_host=172.17.0.1"
-      PHP_IDE_CONFIG: "serverName=xdebug-core-api"
+      PHP_IDE_CONFIG: "serverName=xdebug-core"
     depends_on:
       - postgres
 
