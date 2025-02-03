@@ -19,6 +19,7 @@
   },
   "require-dev": {
     "phpstan/phpstan-symfony": "^2.0",
+    "psalm/plugin-symfony": "^5.2",
     "squizlabs/php_codesniffer": "^3.11.3"
   },
   "config": {
@@ -28,10 +29,7 @@
       "symfony/runtime": true
     },
     "bump-after-update": true,
-    "sort-packages": true,
-    "phpcs": "./vendor/bin/phpcs --no-cache",
-    "phpcbf": "./vendor/bin/phpcbf --no-cache",
-    "phpstan": "./vendor/bin/phpstan analyse --memory-limit=-1"
+    "sort-packages": true
   },
   "autoload": {
     "psr-4": {
@@ -63,7 +61,11 @@
     ],
     "post-update-cmd": [
       "@auto-scripts"
-    ]
+    ],
+    "phpcs": "./vendor/bin/phpcs --no-cache",
+    "phpcbf": "./vendor/bin/phpcbf --no-cache",
+    "phpstan": "./vendor/bin/phpstan analyse --memory-limit=-1",
+    "psalm": "./vendor/bin/psalm --show-info=false --threads=1 --no-cache"
   },
   "conflict": {
     "symfony/symfony": "*"

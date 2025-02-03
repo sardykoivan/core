@@ -13,8 +13,6 @@ final class StatusController extends AbstractController
     #[Route(path: '/status', name: 'app_status', methods: ['GET'])]
     public function status(): JsonResponse
     {
-        $a = 1;
-
         return $this->json(['status' => 'ok']);
     }
 }
