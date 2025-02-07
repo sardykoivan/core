@@ -10,8 +10,9 @@
    docker compose up -d
    ```
 3. install composer deps
+   ``` bash
    docker compose exec php bash
-   ``````
+   ```
 ## use
 ### application is running on port 8092
    ``` bash
