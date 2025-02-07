@@ -2,7 +2,7 @@
 ## install
 1. clone repo:
    ```bash
-   https://github.com/sardykoivan/core.git
+   git clone https://github.com/sardykoivan/core.git
    ```
 2. build & run application on docker
    ``` bash
