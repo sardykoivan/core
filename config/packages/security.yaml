@@ -1,0 +1,48 @@
+security:
+    #enable_authenticator_manager: true
+
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        auth:
+            pattern: ^/api/auth
+            stateless: true
+            json_login:
+                check_path: /api/auth # or api_login_check as defined in config/routes.yaml
+                username_path: email
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        register:
+            pattern: ^/api/register
+            stateless: true
+            security: false
+        status:
+            pattern: ^/api/status
+            stateless: true
+            security: false
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+    role_hierarchy:
+        ROLE_ADMIN: [ ROLE_USER ]
+
+    access_control:
+        #        - { path: ^/_profiler, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        #        - { path: ^/_wdt, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/auth, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api, roles: ROLE_USER }
+        # - { path: ^/api, roles: IS_AUTHENTICATED_FULLY } - for everyone authenticated

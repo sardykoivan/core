@@ -16,3 +16,6 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\Resolver\RequestDtoResolver:
+        tags:
+            - { name: controller.argument_value_resolver, priority: 100 }

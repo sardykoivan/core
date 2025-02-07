@@ -2,4 +2,32 @@
 GET {{host}}
 
 ### status
-GET {{host}}/status
+GET {{host}}/api/status
+
+### jwt auth
+POST {{host}}/api/auth
+Content-Type: application/json
+
+{
+  "email": "user@fixture.com",
+  "password": "admin"
+}
+
+### auth register
+POST {{host}}/api/register
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "test"
+}
+
+### user
+GET {{host}}/api/user
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "email": "test@test.com",
+  "password": "test"
+}

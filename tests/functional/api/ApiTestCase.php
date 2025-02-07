@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\functional\api;
 
-use App\Kernel;
+use App\Entity\User;
+use App\Tests\data\UserData;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
 use Exception;
-use JsonException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class ApiTestCase extends WebTestCase
 {
-    protected KernelBrowser $client;
-    protected SerializerInterface $serializer;
+    private const ADMIN_PASSWORD = 'admin';
 
-    protected static function getKernelClass(): string
-    {
-        return Kernel::class;
-    }
+    protected KernelBrowser $client;
+    protected EntityManagerInterface $em;
 
     /**
      * @throws Exception
@@ -32,8 +29,15 @@ class ApiTestCase extends WebTestCase
         parent::setUp();
 
         $this->client = $this->createClient(['environment' => 'test']);
-        $this->denormalizer = $this->getContainer()->get(DenormalizerInterface::class);
-        $this->serializer = $this->getContainer()->get(SerializerInterface::class);
+        $this->em = $this->getContainer()->get(EntityManagerInterface::class);
+
+        $this->resetDatabase();
+    }
+
+    public function tearDown(): void
+    {
+        $this->resetDatabase();
+        parent::tearDown();
     }
 
     protected function sendAuthenticatedRequest(
@@ -44,7 +48,7 @@ class ApiTestCase extends WebTestCase
         ?array $headers = [],
         ?array $server = [],
     ): Response {
-        $headers['Authorization'] = 'Bearer ' . $this->getJwtToken();
+        $headers['Authorization'] = $this->getAuthorizationHeader($this->receiveToken());
 
         return $this->sendRequest($method, $path, $data, $queryParams, $headers, $server);
     }
@@ -79,53 +83,58 @@ class ApiTestCase extends WebTestCase
         return $this->client->getResponse();
     }
 
-    /**
-     * @template T of object
-     * @param class-string<T> $className
-     *
-     * @return T
-     *
-     * @throws JsonException
-     * @throws ExceptionInterface
-     */
-    protected function denormalizeResponse(string $className): object
-    {
-        $content = json_decode($this->client->getResponse()->getContent(), flags: JSON_THROW_ON_ERROR);
-
-        return $this->denormalizer->denormalize($content, $className);
-    }
-
-    protected function parseResponseContent(Response $response): array
+    public function denormalize(Response $response): array
     {
         return json_decode($response->getContent(), true);
     }
 
-    /**
-     * @dataProvider provideSuccessfulTestData
-     */
-    protected function getJwtToken(): string
+    private function resetDatabase(): void
     {
-        $this->sendRequest(
-            'POST',
-            '/passport/auth',
-            $this->getSuccessfulAuthenticationData(),
-            [],
-            []
-        );
-        $response = $this->client->getResponse();
-        $data = $this->parseResponseContent($response);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
 
-        if ($response->getStatusCode() !== Response::HTTP_OK) {
-            $this->fail('Unsuccessful JWT-authorization.');
+        if (!empty($metadata)) {
+            $schemaTool = new SchemaTool($entityManager);
+            $schemaTool->dropSchema($metadata);
+            $schemaTool->createSchema($metadata);
+        }
+    }
+
+    protected function getUser(): User
+    {
+        return UserData::getUser();
+    }
+
+    protected function flushUser(): void
+    {
+        $this->em->persist($this->getUser());
+        $this->em->flush();
+    }
+
+    protected function getAuthorizationHeader(string $token): string
+    {
+        return 'Bearer ' . $token;
+    }
+
+    protected function receiveToken(): string
+    {
+        $user = $this->getUser();
+
+        $this->client->jsonRequest(
+            method: Request::METHOD_POST,
+            uri: '/api/auth',
+            parameters: [
+                'email' => $user->getEmail(),
+                'password' => self::ADMIN_PASSWORD,
+            ],
+        );
+
+        $data = $this->denormalize($this->client->getResponse());
+        if (!isset($data['token'])) {
+            $this->fail('jwt auth error');
         }
 
         return $data['token'];
-    }
-
-    protected function getSuccessfulAuthenticationData(): array
-    {
-        return
-            ['email' => 'ivan@game.com', 'password' => 'admin']
-            ;
     }
 }
