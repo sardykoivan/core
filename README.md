@@ -13,8 +13,8 @@
    ``` bash
    docker compose exec php bash
    ```
-## use
-### application is running on port 8092
+## using
+### application runs on port 8092
    ``` bash
    curl -X GET --location "http://localhost:8092/api/status"
    ```
