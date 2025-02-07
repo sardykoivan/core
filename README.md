@@ -12,6 +12,7 @@
 3. install composer deps
    ``` bash
    docker compose exec php bash
+   composer install
    ```
 ## using
 ### application runs on port 8092
